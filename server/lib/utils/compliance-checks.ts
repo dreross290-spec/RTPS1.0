@@ -200,14 +200,27 @@ export function isValidContactWindow(start: number, end: number): boolean {
 }
 
 /**
- * Returns the next UTC hour at which the contact window opens.
- * Useful for scheduling deferred messages.
+ * Returns the number of hours until the contact window next opens.
+ * Returns 0 when the window is currently open.
+ * Accounts for day wraparound (e.g. window opens tomorrow morning).
+ *
+ * Examples:
+ *   start=8, currentHour=6  → 2   (opens in 2 hours today)
+ *   start=8, currentHour=8  → 0   (open right now)
+ *   start=8, currentHour=22 → 10  (opens in 10 hours, i.e. tomorrow at 8)
  *
  * @param start - Window start hour (0–23).
  * @param currentHour - Current UTC hour (0–23).
- * @returns Hours until the window opens (0 = open now).
+ * @returns Hours until the window next opens (0 = open now or just opened).
  */
 export function hoursUntilWindowOpens(start: number, currentHour: number): number {
-  if (currentHour >= start) return 0;
-  return start - currentHour;
+  if (currentHour < start) {
+    // Window hasn't opened yet today
+    return start - currentHour;
+  }
+  if (currentHour === start) {
+    return 0;
+  }
+  // currentHour > start: window opened earlier today; next opening is tomorrow
+  return 24 - currentHour + start;
 }

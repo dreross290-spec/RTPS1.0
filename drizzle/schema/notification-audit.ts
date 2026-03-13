@@ -13,6 +13,7 @@ import {
   uuid,
   varchar,
   text,
+  boolean,
   jsonb,
   timestamp,
   index,
@@ -138,9 +139,7 @@ export const providerWebhooks = pgTable(
      * Whether the webhook signature was verified at ingestion time.
      * FALSE rows should be investigated and never acted upon.
      */
-    signatureVerified: varchar("signature_verified", { length: 10 })
-      .notNull()
-      .default("false"),
+    signatureVerified: boolean("signature_verified").notNull().default(false),
 
     /** Provider-assigned message ID extracted from the payload (for indexing). */
     providerMessageId: varchar("provider_message_id", { length: 255 }),

@@ -103,7 +103,7 @@ export const EMAIL_GLOBAL_SETTINGS = {
    * ASM (Advanced Suppression Manager) group ID for CAN-SPAM unsubscribe
    * management.  Set this to your SendGrid unsubscribe group ID.
    */
-  asmGroupId: Number(process.env["SENDGRID_ASM_GROUP_ID"] ?? 0),
+  asmGroupId: parseInt(process.env["SENDGRID_ASM_GROUP_ID"] ?? "0", 10) || 0,
   /**
    * IP pool name for sending (optional – useful for dedicated IPs).
    */

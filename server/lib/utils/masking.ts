@@ -99,7 +99,10 @@ export function maskTaxId(taxId: string): string {
     return `**-***${trimmed.slice(-4)}`;
   }
 
-  // Plain digits
+  // Plain digits or other formats – keep last 4, but if too short always mask fully
+  if (trimmed.length <= 4) {
+    return "*".repeat(trimmed.length);
+  }
   const last4 = trimmed.slice(-4);
   const masked = "*".repeat(Math.max(0, trimmed.length - 4));
   return `${masked}${last4}`;

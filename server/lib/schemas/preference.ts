@@ -94,13 +94,7 @@ export const createNotificationPreferenceSchema = z
       path: ["emailAddress"],
     },
   )
-  .refine(
-    (data) => data.preferredContactHoursStart !== data.preferredContactHoursEnd,
-    {
-      message: "preferredContactHoursStart and preferredContactHoursEnd must differ.",
-      path: ["preferredContactHoursEnd"],
-    },
-  );
+  ;
 
 export type CreateNotificationPreference = z.infer<
   typeof createNotificationPreferenceSchema
@@ -122,18 +116,7 @@ export const updateNotificationPreferenceSchema = z
     emailAddress: z.string().email().optional(),
     eventTypePreferences: eventTypePreferencesSchema.optional(),
   })
-  .refine(
-    (data) => {
-      const start = data.preferredContactHoursStart;
-      const end = data.preferredContactHoursEnd;
-      if (start !== undefined && end !== undefined) return start !== end;
-      return true;
-    },
-    {
-      message: "preferredContactHoursStart and preferredContactHoursEnd must differ when both are provided.",
-      path: ["preferredContactHoursEnd"],
-    },
-  );
+  ;
 
 export type UpdateNotificationPreference = z.infer<
   typeof updateNotificationPreferenceSchema
