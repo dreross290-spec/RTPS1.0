@@ -56,11 +56,11 @@ export async function calculateReturn(returnId: string): Promise<void> {
     socialSecurity: income?.socialSecurity ?? 0,
     pensionIncome: income?.pensionIncome ?? 0,
     otherIncome: income?.otherIncome ?? 0,
-    studentLoanInterest: deductions?.studentLoanInterest as number ?? 0,
-    iraDeduction: deductions?.iraContributions as number ?? 0,
-    educatorExpenses: deductions?.educatorExpenses as number ?? 0,
-    hsaDeduction: deductions?.hsaContributions as number ?? 0,
-    alimonyPaid: deductions?.alimonyPaid as number ?? 0,
+    studentLoanInterest: (deductions?.studentLoanInterest as number) ?? 0,
+    iraDeduction: (deductions?.iraContributions as number) ?? 0,
+    educatorExpenses: (deductions?.educatorExpenses as number) ?? 0,
+    hsaDeduction: (deductions?.hsaContributions as number) ?? 0,
+    alimonyPaid: (deductions?.alimonyPaid as number) ?? 0,
   };
 
   const agi = calculateAGI(incomeData);
@@ -70,10 +70,10 @@ export async function calculateReturn(returnId: string): Promise<void> {
 
   const deductionData = {
     deductionType: (deductions?.deductionType as "standard" | "itemized") ?? "standard",
-    mortgageInterest: deductions?.mortgageInterest as number ?? 0,
-    charitableContributions: deductions?.charitableContributions as number ?? 0,
-    stateTaxesPaid: deductions?.stateTaxesPaid as number ?? 0,
-    medicalExpenses: deductions?.medicalExpenses as number ?? 0,
+    mortgageInterest: (deductions?.mortgageInterest as number) ?? 0,
+    charitableContributions: (deductions?.charitableContributions as number) ?? 0,
+    stateTaxesPaid: (deductions?.stateTaxesPaid as number) ?? 0,
+    medicalExpenses: (deductions?.medicalExpenses as number) ?? 0,
   };
 
   const taxableIncome = calculateFederalTaxableIncome(agi, deductionData, taxYear, filingStatus);
@@ -86,7 +86,7 @@ export async function calculateReturn(returnId: string): Promise<void> {
   }).length;
 
   const eitc = calculateEITC({
-    earnedIncome: income?.wages ?? 0 + (income?.businessIncome ?? 0),
+    earnedIncome: (income?.wages ?? 0) + (income?.businessIncome ?? 0),
     agi,
     filingStatus,
     qualifyingChildren,

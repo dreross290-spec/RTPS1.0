@@ -73,7 +73,7 @@ export const preparationReturnsRouter = createTRPCRouter({
         totalTax: calculations.totalTax ?? 0,
         withholding: calculations.withholding ?? 0,
         credits: calculations as Record<string, number>,
-        deductions: draftData.deductions as Record<string, unknown> ?? {},
+        deductions: (draftData.deductions as Record<string, unknown>) ?? {},
         dependents: (draftData.dependents as Array<{
           firstName: string;
           lastName: string;
