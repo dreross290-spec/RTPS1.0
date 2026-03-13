@@ -55,11 +55,9 @@ export function formatSMS(
   // Call the template function – cast required due to union type in SMS_TEMPLATES
   const rawBody = (templateFn as (v: typeof vars) => string)(vars);
 
-  // Append portal link
+  // Append portal link (templates never embed URLs, so always append)
   const portalLink = buildPortalLink(data.clientId, data.taxYear);
-  const bodyWithLink = rawBody.includes(PORTAL_BASE_URL)
-    ? rawBody
-    : `${rawBody} ${portalLink}`;
+  const bodyWithLink = `${rawBody} ${portalLink}`;
 
   // Append TCPA opt-out footer
   const finalBody = `${bodyWithLink}\n${SMS_OPT_OUT_FOOTER}`;
