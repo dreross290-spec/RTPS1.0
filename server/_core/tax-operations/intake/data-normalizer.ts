@@ -21,16 +21,17 @@ export function normalizeToCanonical(intakeData: IntakeData): Partial<CanonicalT
   return {
     taxYear: intakeData.taxYear,
     returnType: "1040",
-    personalInfo: buildPersonalInfo(intakeData.personalInfo, answers),
-    income: buildIncome(income, answers),
-    deductions: buildDeductions(answers),
-    credits: buildCredits(answers),
+    personalInfo: buildPersonalInfo(intakeData.personalInfo, answers) as CanonicalTaxPayload["personalInfo"],
+    income: buildIncome(income, answers) as CanonicalTaxPayload["income"],
+    deductions: buildDeductions(answers) as CanonicalTaxPayload["deductions"],
+    credits: buildCredits(answers) as CanonicalTaxPayload["credits"],
     states: detectMultiState(intakeData).map((state) => ({
       state,
-      residencyStatus: "resident",
+      residencyStatus: "resident" as const,
       income: allocateIncomeForState(income, state),
-      deductions: {},
-      credits: {},
+      deductions: {} as Record<string, number>,
+      credits: {} as Record<string, number>,
+      withholding: 0,
     })),
   };
 }

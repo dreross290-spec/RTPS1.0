@@ -455,7 +455,7 @@ export function getDefaultEmailTemplates(): Record<string, NotificationTemplate>
       body: `
         <h2>Your Tax Return Has Been Accepted</h2>
         <p>Great news! Your {{taxYear}} federal tax return has been accepted by the IRS.</p>
-        <p>Your refund of <strong>${{refundAmount}}</strong> is being processed.</p>
+        <p>Your refund of <strong>\${{refundAmount}}</strong> is being processed.</p>
         <p>Expected deposit date: <strong>{{expectedDate}}</strong></p>
         <hr>
         <p style="font-size:11px;color:#888;">
@@ -465,10 +465,10 @@ export function getDefaultEmailTemplates(): Record<string, NotificationTemplate>
       `,
     },
     refund_approved: {
-      subject: "💰 Your Tax Refund Has Been Approved – ${{refundAmount}}",
+      subject: "💰 Your Tax Refund Has Been Approved – \${{refundAmount}}",
       body: `
         <h2>Your Refund Has Been Approved!</h2>
-        <p>The IRS has approved your {{taxYear}} tax refund of <strong>${{refundAmount}}</strong>.</p>
+        <p>The IRS has approved your {{taxYear}} tax refund of <strong>\${{refundAmount}}</strong>.</p>
         <p>Expected payment date: <strong>{{expectedDate}}</strong></p>
         <hr>
         <p style="font-size:11px;color:#888;">
@@ -480,7 +480,7 @@ export function getDefaultEmailTemplates(): Record<string, NotificationTemplate>
       subject: "🎉 Your Tax Refund Has Been Issued!",
       body: `
         <h2>Refund Issued</h2>
-        <p>The IRS has issued your {{taxYear}} refund of <strong>${{refundAmount}}</strong>.</p>
+        <p>The IRS has issued your {{taxYear}} refund of <strong>\${{refundAmount}}</strong>.</p>
         <p>It should arrive within 1–5 business days.</p>
         <hr>
         <p style="font-size:11px;color:#888;"><a href="{{unsubscribeUrl}}">Unsubscribe</a></p>
@@ -490,7 +490,7 @@ export function getDefaultEmailTemplates(): Record<string, NotificationTemplate>
       subject: "🏦 Your Tax Refund Has Been Deposited",
       body: `
         <h2>Direct Deposit Sent</h2>
-        <p>Your {{taxYear}} refund of <strong>${{refundAmount}}</strong> has been sent via direct deposit.</p>
+        <p>Your {{taxYear}} refund of <strong>\${{refundAmount}}</strong> has been sent via direct deposit.</p>
         <p>Please allow 1–5 business days for your bank to process it.</p>
         <hr>
         <p style="font-size:11px;color:#888;"><a href="{{unsubscribeUrl}}">Unsubscribe</a></p>
@@ -500,7 +500,7 @@ export function getDefaultEmailTemplates(): Record<string, NotificationTemplate>
       subject: "📬 Your Refund Check Has Been Mailed",
       body: `
         <h2>Refund Check Mailed</h2>
-        <p>The IRS has mailed your {{taxYear}} refund check for <strong>${{refundAmount}}</strong>.</p>
+        <p>The IRS has mailed your {{taxYear}} refund check for <strong>\${{refundAmount}}</strong>.</p>
         <p>Please allow 3–6 weeks for delivery.</p>
         <hr>
         <p style="font-size:11px;color:#888;"><a href="{{unsubscribeUrl}}">Unsubscribe</a></p>

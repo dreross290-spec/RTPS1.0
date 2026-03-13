@@ -56,7 +56,7 @@ export const intakeDocumentsRouter = createTRPCRouter({
 
       await ctx.db
         .update(intakeDocuments)
-        .set({ parsedData: parsed[0] as Record<string, unknown>, status: "parsed" })
+        .set({ parsedData: (parsed[0] as unknown) as Record<string, unknown>, status: "parsed" })
         .where(eq(intakeDocuments.documentId, input.documentId));
 
       return { success: true, parsed: parsed[0] };
