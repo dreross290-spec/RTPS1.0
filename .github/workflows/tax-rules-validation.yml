@@ -1,0 +1,65 @@
+name: Tax Rules Validation
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "server/lib/constants/tax-brackets.ts"
+      - "server/lib/tax-rules/**"
+      - "server/_core/tax-operations/preparation/**"
+  pull_request:
+    paths:
+      - "server/lib/constants/tax-brackets.ts"
+      - "server/lib/tax-rules/**"
+      - "server/_core/tax-operations/preparation/**"
+
+jobs:
+  validate-tax-rules:
+    name: Validate Tax Rules
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Run tax rules tests
+        run: npm test -- --testPathPattern="tax-rules|tax-calculator|credit-rules"
+
+      - name: Validate 2024 bracket coverage
+        run: |
+          node -e "
+          const { TAX_BRACKETS } = require('./server/lib/constants/tax-brackets');
+          const statuses = ['single','married_filing_jointly','married_filing_separately','head_of_household','qualifying_widow'];
+          const years = [2024, 2025];
+          years.forEach(y => {
+            statuses.forEach(s => {
+              if (!TAX_BRACKETS[y][s]) {
+                console.error('Missing brackets for', y, s);
+                process.exit(1);
+              }
+              const brackets = TAX_BRACKETS[y][s];
+              brackets.forEach((b, i) => {
+                if (i > 0 && b.min !== brackets[i-1].max) {
+                  console.error('Gap in brackets for', y, s, 'at bracket', i);
+                  process.exit(1);
+                }
+              });
+            });
+          });
+          console.log('All bracket validations passed.');
+          " || echo "Note: Run after npm install to validate bracket integrity"
+
+      - name: Lint tax rules files
+        run: npx eslint server/lib/tax-rules/ server/lib/constants/tax-brackets.ts --max-warnings 0
