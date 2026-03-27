@@ -302,8 +302,8 @@ export async function sendEmailNotification(
     const [response] = await sgMail.send({
       to: emailAddress,
       from: {
-        email: process.env.SENDGRID_FROM_EMAIL ?? "noreply@rtps.example.com",
-        name: process.env.SENDGRID_FROM_NAME ?? "RTPS Tax Services",
+        email: process.env.SENDGRID_FROM_EMAIL ?? "noreply@rosstaxpro.com",
+        name: process.env.SENDGRID_FROM_NAME ?? "Ross Tax Pro Software",
       },
       subject,
       html: body,

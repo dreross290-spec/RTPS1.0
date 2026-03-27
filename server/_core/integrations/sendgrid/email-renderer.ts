@@ -68,8 +68,8 @@ function buildDynamicData(
     fromName: EMAIL_GLOBAL_SETTINGS.fromName,
     currentYear: new Date().getFullYear().toString(),
     // CAN-SPAM physical address (required)
-    physicalAddress: process.env["COMPANY_PHYSICAL_ADDRESS"] ?? "123 Main St, Suite 100, Anytown, USA 12345",
-    companyName: process.env["COMPANY_NAME"] ?? "Tax Refund Updates",
+    physicalAddress: process.env["COMPANY_PHYSICAL_ADDRESS"] ?? "Ross Tax Pro Software",
+    companyName: process.env["COMPANY_NAME"] ?? "Ross Tax Pro Software",
   };
 
   // Add event-specific variables
