@@ -178,7 +178,7 @@ export class CADE2Client {
           "Authorization": `Bearer ${this.apiKey}`,
           "Accept": "application/json",
           "Content-Type": "application/json",
-          "X-RTPS-Client": "rtps/1.0",
+          "X-RTPS-Client": "RossTaxPro/1.0",
         },
         signal: controller.signal,
       });

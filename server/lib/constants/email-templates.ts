@@ -91,7 +91,7 @@ export const EMAIL_TEMPLATES: Readonly<Record<RefundEventType, EmailTemplateConf
  */
 export const EMAIL_GLOBAL_SETTINGS = {
   /** Sender name shown in "From" field. Falls back to env var SENDGRID_FROM_NAME. */
-  fromName: process.env["SENDGRID_FROM_NAME"] ?? "Tax Refund Updates",
+  fromName: process.env["SENDGRID_FROM_NAME"] ?? "Ross Tax Pro Software",
   /** Sender address. Falls back to env var SENDGRID_FROM_EMAIL. */
   fromEmail: process.env["SENDGRID_FROM_EMAIL"] ?? "noreply@example.com",
   /**

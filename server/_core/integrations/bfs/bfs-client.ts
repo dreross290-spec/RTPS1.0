@@ -290,7 +290,7 @@ export class BFSClient {
           "X-BFS-Signature": signature,
           "Accept": "application/json",
           "Content-Type": "application/json",
-          "X-RTPS-Client": "rtps/1.0",
+          "X-RTPS-Client": "RossTaxPro/1.0",
         },
         signal: controller.signal,
       });
@@ -309,10 +309,16 @@ export class BFSClient {
       throw new BFSAuthError("BFS authentication failed. Check API key and client credentials.");
     }
     if (response.status === 404) {
-      // Extract TIN/taxYear from path for a better error message
-      const parts = path.split("/");
-      const tin = decodeURIComponent(parts[3] ?? "unknown");
-      const yearStr = parts[4] ?? "0";
+      // Try to extract TIN/taxYear from the path for a better error message.
+      // Path patterns: /v1/top/offsets/{tin}/{year} or /v1/payments/{id}/status
+      const parts = path.split("/").filter(Boolean);
+      const offsetsIdx = parts.indexOf("offsets");
+      const tin = offsetsIdx !== -1 && parts[offsetsIdx + 1]
+        ? decodeURIComponent(parts[offsetsIdx + 1]!)
+        : "unknown";
+      const yearStr = offsetsIdx !== -1 && parts[offsetsIdx + 2]
+        ? parts[offsetsIdx + 2]!
+        : "0";
       throw new BFSNotFoundError(tin, parseInt(yearStr, 10));
     }
     if (response.status === 429) {

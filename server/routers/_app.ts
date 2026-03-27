@@ -12,6 +12,7 @@ import { transmittalStatesRouter } from "./transmittal.states";
 import { transmittalTrackingRouter } from "./transmittal.tracking";
 import { complianceAuditRouter } from "./compliance.audit";
 import { notificationsRouter } from "./notifications";
+import { refundSummaryRouter } from "./reports.refund-summary";
 
 export const appRouter = createTRPCRouter({
   admin: createTRPCRouter({
@@ -37,6 +38,9 @@ export const appRouter = createTRPCRouter({
     audit: complianceAuditRouter,
   }),
   notifications: notificationsRouter,
+  reports: createTRPCRouter({
+    refundSummary: refundSummaryRouter,
+  }),
 });
 
 export type AppRouter = typeof appRouter;
