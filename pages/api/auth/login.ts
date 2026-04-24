@@ -88,10 +88,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       userAgent,
     });
 
-    // Update updatedAt to reflect last login
+    // Record last login time
     await db
       .update(users)
-      .set({ updatedAt: new Date() })
+      .set({ lastLoginAt: new Date(), updatedAt: new Date() })
       .where(eq(users.userId, user.userId));
 
     res.setHeader("Set-Cookie", serializeTokenCookie(token));

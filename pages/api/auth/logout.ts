@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const payload = await verifyToken(token);
       await db.insert(authAuditLogs).values({
-        userId: payload.sub ?? null,
+        userId: payload.sub,
         email: payload.email ?? null,
         event: "logout",
         ipAddress:

@@ -41,8 +41,13 @@ export function useAuth(): UseAuthReturn {
     try {
       const res = await loginApi(email, password);
       setUser(res.user);
-      const redirect = new URLSearchParams(window.location.search).get("redirect");
-      await router.push(redirect ?? "/admin/dashboard");
+      const rawRedirect = new URLSearchParams(window.location.search).get("redirect");
+      // Only allow internal redirects (must start with /) to prevent open-redirect attacks
+      const redirect =
+        rawRedirect && rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
+          ? rawRedirect
+          : "/admin/dashboard";
+      await router.push(redirect);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {

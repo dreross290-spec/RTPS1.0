@@ -12,6 +12,8 @@ const BCRYPT_ROUNDS = 12;
 
 function getJwtKey(): Uint8Array {
   const secret = process.env.JWT_SECRET;
+  // Require at least 32 characters. For production, use a cryptographically
+  // random secret: node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
   if (!secret || secret.length < 32) {
     throw new Error(
       "JWT_SECRET environment variable must be set to at least 32 characters."
