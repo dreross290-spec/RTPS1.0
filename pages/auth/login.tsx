@@ -3,12 +3,27 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { useAuth } from "@/client/hooks/useAuth";
 
-/** Only allow relative-path redirects to prevent open-redirect attacks. */
+/**
+ * Sanitize the `?next=` redirect target.
+ * Parses the value as a URL against a fixed placeholder origin, then returns
+ * only the pathname + search (never host or protocol), ensuring the browser
+ * stays on the same origin and cannot be redirected to an external site.
+ */
 function getSafeNext(next: unknown): string {
-  if (typeof next === "string" && next.startsWith("/") && !next.startsWith("//")) {
-    return next;
+  if (typeof next !== "string" || next.length === 0) {
+    return "/admin/dashboard";
   }
-  return "/admin/dashboard";
+  try {
+    // Use a fixed placeholder origin so absolute URLs get their host stripped.
+    const url = new URL(next, "https://same-origin.local");
+    // Guard: the resolved hostname must equal the placeholder (i.e. input was relative).
+    if (url.hostname !== "same-origin.local") {
+      return "/admin/dashboard";
+    }
+    return url.pathname + url.search;
+  } catch {
+    return "/admin/dashboard";
+  }
 }
 
 export default function LoginPage() {

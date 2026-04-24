@@ -48,10 +48,16 @@ export function useAuth() {
         const data: AuthUser = await res.json();
         setState({ user: data, loading: false, error: null });
       } else {
+        // 401 means not authenticated – clear user without an error message
         setState({ user: null, loading: false, error: null });
       }
     } catch {
-      setState({ user: null, loading: false, error: null });
+      // Network or unexpected error
+      setState({
+        user: null,
+        loading: false,
+        error: "Unable to reach the server. Please check your connection.",
+      });
     }
   }, []);
 

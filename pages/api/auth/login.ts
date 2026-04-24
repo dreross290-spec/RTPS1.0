@@ -47,9 +47,9 @@ export default async function handler(
     req.socket.remoteAddress
   );
 
-  // Placeholder hash used when user is not found to maintain constant-time comparison
-  // and prevent user enumeration via timing attacks.
-  const TIMING_SAFE_PLACEHOLDER_HASH =
+  // Placeholder hash used when no user is found – ensures constant-time
+  // comparison to prevent user enumeration via timing attacks.
+  const TIMING_ATTACK_PREVENTION_HASH =
     "$2a$12$invalidhashfortimingattackprevention";
 
   try {
@@ -57,7 +57,7 @@ export default async function handler(
       where: eq(users.email, email),
     });
 
-    const passwordHash = user?.passwordHash ?? TIMING_SAFE_PLACEHOLDER_HASH;
+    const passwordHash = user?.passwordHash ?? TIMING_ATTACK_PREVENTION_HASH;
     const valid = await verifyPassword(password, passwordHash);
 
     if (!user || !valid) {
@@ -70,8 +70,8 @@ export default async function handler(
           entityType: "user",
           entityId: user.userId,
           ipAddress: ip,
-        }).catch(() => {
-          /* non-blocking */
+        }).catch((err) => {
+          console.error("[auth/login] audit-log failed:", err);
         });
       }
       return res.status(401).json({ error: "Invalid email or password" });
@@ -86,8 +86,8 @@ export default async function handler(
         entityType: "user",
         entityId: user.userId,
         ipAddress: ip,
-      }).catch(() => {
-        /* non-blocking */
+      }).catch((err) => {
+        console.error("[auth/login] audit-log failed:", err);
       });
     }
 

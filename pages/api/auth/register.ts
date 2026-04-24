@@ -90,8 +90,8 @@ export default async function handler(
           req.headers as Record<string, string | string[] | undefined>,
           req.socket.remoteAddress
         ),
-      }).catch(() => {
-        /* non-blocking */
+      }).catch((err) => {
+        console.error("[auth/register] audit-log failed:", err);
       });
     }
 

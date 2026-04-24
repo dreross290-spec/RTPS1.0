@@ -33,7 +33,7 @@ function getJwtExpiresIn(): string {
 export interface TokenPayload extends JWTPayload {
   sub: string;           // userId
   email: string;
-  role: "admin" | "staff";
+  role: "admin" | "staff" | "super_admin" | "firm_admin" | "preparer" | "reviewer";
   accountId: string | null;
 }
 
