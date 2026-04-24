@@ -15,6 +15,7 @@ import {
   verifyPassword,
   signToken,
   buildAuthCookie,
+  extractClientIP,
   type TokenPayload,
 } from "@server/lib/auth";
 import { logAction } from "@/server/_core/account-hub/audit-logger";
@@ -41,16 +42,22 @@ export default async function handler(
   }
 
   const { email, password } = parsed.data;
-  const ip =
-    req.headers["x-forwarded-for"]?.toString() ?? req.socket.remoteAddress;
+  const ip = extractClientIP(
+    req.headers as Record<string, string | string[] | undefined>,
+    req.socket.remoteAddress
+  );
+
+  // Placeholder hash used when user is not found to maintain constant-time comparison
+  // and prevent user enumeration via timing attacks.
+  const TIMING_SAFE_PLACEHOLDER_HASH =
+    "$2a$12$invalidhashfortimingattackprevention";
 
   try {
     const user = await db.query.users.findFirst({
       where: eq(users.email, email),
     });
 
-    // Use a constant-time comparison path to prevent user enumeration
-    const passwordHash = user?.passwordHash ?? "$2a$12$invalidhashfortimingattackprevention";
+    const passwordHash = user?.passwordHash ?? TIMING_SAFE_PLACEHOLDER_HASH;
     const valid = await verifyPassword(password, passwordHash);
 
     if (!user || !valid) {

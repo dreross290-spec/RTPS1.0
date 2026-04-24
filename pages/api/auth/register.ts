@@ -15,6 +15,7 @@ import {
   hashPassword,
   signToken,
   buildAuthCookie,
+  extractClientIP,
   type TokenPayload,
 } from "@server/lib/auth";
 import { logAction } from "@/server/_core/account-hub/audit-logger";
@@ -85,7 +86,10 @@ export default async function handler(
         action: "auth.register",
         entityType: "user",
         entityId: user.userId,
-        ipAddress: req.headers["x-forwarded-for"]?.toString() ?? req.socket.remoteAddress,
+        ipAddress: extractClientIP(
+          req.headers as Record<string, string | string[] | undefined>,
+          req.socket.remoteAddress
+        ),
       }).catch(() => {
         /* non-blocking */
       });

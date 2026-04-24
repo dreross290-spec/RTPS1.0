@@ -33,7 +33,9 @@ export default function ProtectedRoute({
     }
 
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-      void router.replace("/auth/login");
+      void router.replace(
+        `/auth/login?next=${encodeURIComponent(router.asPath)}`
+      );
     }
   }, [user, loading, allowedRoles, router]);
 

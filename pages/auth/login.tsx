@@ -3,6 +3,14 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { useAuth } from "@/client/hooks/useAuth";
 
+/** Only allow relative-path redirects to prevent open-redirect attacks. */
+function getSafeNext(next: unknown): string {
+  if (typeof next === "string" && next.startsWith("/") && !next.startsWith("//")) {
+    return next;
+  }
+  return "/admin/dashboard";
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
@@ -12,10 +20,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const next =
-    typeof router.query.next === "string"
-      ? router.query.next
-      : "/admin/dashboard";
+  const next = getSafeNext(router.query.next);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();

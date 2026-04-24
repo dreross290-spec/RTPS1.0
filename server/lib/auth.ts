@@ -13,6 +13,8 @@ import bcrypt from "bcryptjs";
 const BCRYPT_ROUNDS = 12;
 const JWT_ALGORITHM = "HS256";
 export const JWT_COOKIE_NAME = "rtps_token";
+/** Default cookie max-age: 8 hours in seconds (matches JWT_EXPIRES_IN default "8h"). */
+const DEFAULT_MAX_AGE_SECONDS = 28800;
 
 // ─── Secret ──────────────────────────────────────────────────────────────────
 
@@ -84,7 +86,10 @@ export async function verifyPassword(
  * Build a Set-Cookie header value for the JWT.
  * Uses HttpOnly + SameSite=Strict for security.
  */
-export function buildAuthCookie(token: string, maxAgeSeconds = 28800): string {
+export function buildAuthCookie(
+  token: string,
+  maxAgeSeconds = DEFAULT_MAX_AGE_SECONDS
+): string {
   const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
   return `${JWT_COOKIE_NAME}=${token}; HttpOnly; SameSite=Strict; Path=/${secure}; Max-Age=${maxAgeSeconds}`;
 }
@@ -125,4 +130,20 @@ export function extractToken(
   }
 
   return null;
+}
+
+/**
+ * Extract the client IP address from request headers.
+ * Prefers X-Forwarded-For (set by proxies/load-balancers) over the raw socket address.
+ */
+export function extractClientIP(
+  headers: Record<string, string | string[] | undefined>,
+  socketAddress: string | undefined
+): string | undefined {
+  const forwarded = headers["x-forwarded-for"];
+  if (forwarded) {
+    const first = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+    return first?.split(",")[0]?.trim();
+  }
+  return socketAddress;
 }
