@@ -65,11 +65,16 @@ export async function createContext(opts: CreateContextOptions): Promise<Context
 }
 
 /**
- * Shared database instance for use outside of request context
- * (e.g. in routers that access the DB directly).
+ * Shared database singleton for use outside of request context
+ * (e.g. in routers that access the DB directly). Lazily initialised on
+ * first property access so that DATABASE_URL errors surface at call time,
+ * not at module load time.
  */
+let _sharedDb: ReturnType<typeof getDb> | null = null;
+
 export const db = new Proxy({} as ReturnType<typeof getDb>, {
   get(_target, prop) {
-    return Reflect.get(getDb(), prop);
+    if (_sharedDb === null) _sharedDb = getDb();
+    return Reflect.get(_sharedDb, prop, _sharedDb);
   },
 });

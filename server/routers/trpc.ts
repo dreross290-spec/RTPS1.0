@@ -87,7 +87,7 @@ const enforceAdmin = t.middleware(({ ctx, next }) => {
   if (role !== "admin") {
     throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required." });
   }
-  return next({ ctx: { ...ctx, session: ctx.session } });
+  return next({ ctx });
 });
 
 export const adminProcedure = t.procedure.use(enforceAdmin);

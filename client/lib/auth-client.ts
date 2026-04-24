@@ -6,9 +6,9 @@
  * otherwise falls back to relative paths.
  */
 
-const BASE = (typeof process !== "undefined" && process.env["NEXT_PUBLIC_API_URL"])
-  ? process.env["NEXT_PUBLIC_API_URL"].replace(/\/$/, "")
-  : "";
+// NEXT_PUBLIC_API_URL is injected at build time by Next.js for browser access.
+// Falls back to relative paths when not set (same-origin deployment).
+const BASE = (process.env["NEXT_PUBLIC_API_URL"] ?? "").replace(/\/$/, "");
 
 export interface AuthUser {
   id: string;

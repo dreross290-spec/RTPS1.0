@@ -47,10 +47,11 @@ export default async function handler(
       where: eq(users.email, email.toLowerCase()),
     });
 
-    // Use a constant-time comparison to prevent user enumeration
+    // Use a constant-time comparison to prevent user enumeration.
+    // This is a valid bcrypt hash of "dummy" with cost 12 to ensure
+    // bcrypt.compare always runs the full work factor.
     if (!user) {
-      // Still run bcrypt to prevent timing attacks
-      await verifyPassword(password, "$2a$12$invalidhashpaddingtomakethisconstanttime0000000000000000");
+      await verifyPassword(password, "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LeuQY9.rRAn.TZ6Ai");
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
