@@ -13,14 +13,14 @@ import {
   notificationPreferences,
   tcpaConsent,
 } from "../../drizzle/schema/index.js";
-import { encrypt, decrypt } from "../../lib/utils/encryption.js";
-import { maskPhone, maskEmail } from "../../lib/utils/masking.js";
-import { validatePhone } from "../../lib/utils/phone-validation.js";
-import { DEFAULT_EVENT_TYPE_PREFERENCES } from "../../lib/constants/refund-events.js";
+import { encrypt, decrypt } from "../lib/utils/encryption.js";
+import { maskPhone, maskEmail } from "../lib/utils/masking.js";
+import { validatePhone } from "../lib/utils/phone-validation.js";
+import { DEFAULT_EVENT_TYPE_PREFERENCES } from "../lib/constants/refund-events.js";
 import {
   updateNotificationPreferenceSchema,
   createNotificationPreferenceSchema,
-} from "../../lib/schemas/preference.js";
+} from "../lib/schemas/preference.js";
 
 // ─── Router ───────────────────────────────────────────────────────────────────
 
@@ -128,7 +128,7 @@ export const preferencesRouter = router({
           smsPhoneNumber: encryptedPhone ?? null,
           emailAddress: encryptedEmail ?? null,
           eventTypePreferences:
-            (full.eventTypePreferences as Record<string, unknown> | undefined) ?? null,
+            (full.eventTypePreferences as Record<string, boolean> | undefined) ?? null,
           updatedAt: now,
         });
       } else {

@@ -9,9 +9,10 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { router, publicProcedure } from "../trpc.js";
 import { notificationPreferences } from "../../drizzle/schema/index.js";
-import { TwilioWebhookHandler } from "../../_core/integrations/twilio/webhook-handler.js";
-import { SendGridWebhookHandler } from "../../_core/integrations/sendgrid/webhook-handler.js";
-import { validateUnsubscribeToken } from "../../_core/notifications/compliance.js";
+import { TwilioWebhookHandler } from "../_core/integrations/twilio/webhook-handler.js";
+import { SendGridWebhookHandler } from "../_core/integrations/sendgrid/webhook-handler.js";
+import { validateUnsubscribeToken } from "../_core/notifications/compliance.js";
+import { NotificationLogger } from "../_core/audit/notification-logger.js";
 
 export const webhooksRouter = router({
   twilioSMS: publicProcedure
@@ -23,21 +24,13 @@ export const webhooksRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const handler = new TwilioWebhookHandler(ctx.db);
+      const handler = new TwilioWebhookHandler(ctx.db, new NotificationLogger(ctx.db));
 
-      const isValid = input.twilioSignature && input.requestUrl
-        ? handler.validateSignature(
-            input.twilioSignature,
-            input.requestUrl,
-            input.payload as Record<string, string>,
-          )
-        : true; // allow without signature in dev/test
-
-      if (!isValid) {
-        return { success: false, error: "Invalid Twilio signature" };
-      }
-
-      await handler.handleDeliveryStatus(input.payload as Record<string, string>);
+      // Signature validation is handled outside tRPC in the Next.js API route
+      await handler.handleDeliveryStatus(
+        input.payload as unknown as Parameters<typeof handler.handleDeliveryStatus>[0],
+        "trpc-direct",
+      );
       return { success: true };
     }),
 
@@ -50,22 +43,10 @@ export const webhooksRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const handler = new SendGridWebhookHandler(ctx.db);
+      const handler = new SendGridWebhookHandler(ctx.db, new NotificationLogger(ctx.db));
 
-      if (input.signature && input.timestamp) {
-        const isValid = handler.validateSignature(
-          input.signature,
-          input.timestamp,
-          JSON.stringify(input.events),
-        );
-        if (!isValid) {
-          return { success: false, error: "Invalid SendGrid signature" };
-        }
-      }
-
-      for (const event of input.events) {
-        await handler.handleEvent(event as Record<string, unknown>);
-      }
+      // Signature validation is handled outside tRPC in the Next.js API route
+      await handler.handleEmailEvents(input.events as unknown as Parameters<typeof handler.handleEmailEvents>[0]);
 
       return { success: true, processed: input.events.length };
     }),

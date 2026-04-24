@@ -63,3 +63,13 @@ export async function createContext(opts: CreateContextOptions): Promise<Context
     headers: opts.headers,
   };
 }
+
+/**
+ * Shared database instance for use outside of request context
+ * (e.g. in routers that access the DB directly).
+ */
+export const db = new Proxy({} as ReturnType<typeof getDb>, {
+  get(_target, prop) {
+    return Reflect.get(getDb(), prop);
+  },
+});

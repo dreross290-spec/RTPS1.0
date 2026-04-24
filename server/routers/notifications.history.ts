@@ -9,6 +9,7 @@ import { z } from "zod";
 import { eq, and, gte, lte, desc } from "drizzle-orm";
 import { router, protectedProcedure, adminProcedure } from "../trpc.js";
 import { notificationAudit } from "../../drizzle/schema/index.js";
+import type { DeliveryStatus } from "../../drizzle/schema/index.js";
 
 export const historyRouter = router({
   list: protectedProcedure
@@ -18,7 +19,7 @@ export const historyRouter = router({
         pagination: z.object({
           limit: z.number().int().min(1).max(100).default(20),
           offset: z.number().int().min(0).default(0),
-          channel: z.enum(["sms", "email"]).optional(),
+          provider: z.enum(["twilio", "sendgrid"]).optional(),
           status: z.string().optional(),
         }),
       }),
@@ -27,11 +28,11 @@ export const historyRouter = router({
       const { clientId, pagination } = input;
       const conditions = [eq(notificationAudit.clientId, clientId)];
 
-      if (pagination.channel) {
-        conditions.push(eq(notificationAudit.channel, pagination.channel));
+      if (pagination.provider) {
+        conditions.push(eq(notificationAudit.provider, pagination.provider));
       }
       if (pagination.status) {
-        conditions.push(eq(notificationAudit.deliveryStatus, pagination.status));
+        conditions.push(eq(notificationAudit.deliveryStatus, pagination.status as DeliveryStatus));
       }
 
       const rows = await ctx.db
@@ -46,10 +47,9 @@ export const historyRouter = router({
         items: rows.map((r) => ({
           id: r.id,
           notificationEventId: r.notificationEventId,
-          channel: r.channel,
           provider: r.provider,
           deliveryStatus: r.deliveryStatus,
-          maskedRecipient: r.maskedRecipient,
+          providerMessageId: r.providerMessageId,
           errorCode: r.errorCode,
           errorMessage: r.errorMessage,
           createdAt: r.createdAt,
@@ -79,11 +79,9 @@ export const historyRouter = router({
         id: r.id,
         notificationEventId: r.notificationEventId,
         clientId: r.clientId,
-        channel: r.channel,
         provider: r.provider,
         deliveryStatus: r.deliveryStatus,
         providerMessageId: r.providerMessageId,
-        maskedRecipient: r.maskedRecipient,
         errorCode: r.errorCode,
         errorMessage: r.errorMessage,
         createdAt: r.createdAt,
@@ -115,7 +113,7 @@ export const historyRouter = router({
         )
         .orderBy(desc(notificationAudit.createdAt));
 
-      const header = "id,notificationEventId,channel,provider,deliveryStatus,maskedRecipient,errorCode,errorMessage,createdAt";
+      const header = "id,notificationEventId,provider,deliveryStatus,providerMessageId,errorCode,errorMessage,createdAt";
       const escapeCSV = (v: unknown): string => {
         if (v == null) return "";
         const s = String(v);
@@ -129,10 +127,9 @@ export const historyRouter = router({
         [
           r.id,
           r.notificationEventId,
-          r.channel,
           r.provider,
           r.deliveryStatus,
-          r.maskedRecipient,
+          r.providerMessageId,
           r.errorCode,
           r.errorMessage,
           r.createdAt?.toISOString() ?? "",

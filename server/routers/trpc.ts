@@ -2,20 +2,22 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { db } from "@server/lib/db";
 import superjson from "superjson";
+import { parse as parseCookies } from "cookie";
+import { verifyToken, AUTH_COOKIE_NAME } from "@server/lib/auth";
 
 // ── Context ───────────────────────────────────────────────────────────────────
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  role: "admin" | "staff";
+}
 
 export interface TRPCContext {
   db: typeof db;
   req: CreateNextContextOptions["req"];
   res: CreateNextContextOptions["res"];
-  session: {
-    user?: {
-      id: string;
-      accountId: string;
-      role: string;
-    };
-  } | null;
+  session: { user: AuthUser } | null;
 }
 
 export async function createTRPCContext(
@@ -23,8 +25,26 @@ export async function createTRPCContext(
 ): Promise<TRPCContext> {
   const { req, res } = opts;
 
-  // In production, use next-auth session or JWT validation here
-  const session = null;
+  let session: TRPCContext["session"] = null;
+
+  try {
+    const cookieHeader = req.headers.cookie ?? "";
+    const cookies = parseCookies(cookieHeader);
+    const token = cookies[AUTH_COOKIE_NAME];
+
+    if (token) {
+      const payload = await verifyToken(token);
+      session = {
+        user: {
+          id: payload.sub,
+          email: payload.email,
+          role: payload.role,
+        },
+      };
+    }
+  } catch {
+    // Token missing or invalid — unauthenticated request
+  }
 
   return { db, req, res, session };
 }
@@ -64,10 +84,10 @@ const enforceAdmin = t.middleware(({ ctx, next }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   const { role } = ctx.session.user;
-  if (!["super_admin", "firm_admin"].includes(role)) {
-    throw new TRPCError({ code: "FORBIDDEN" });
+  if (role !== "admin") {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required." });
   }
-  return next({ ctx });
+  return next({ ctx: { ...ctx, session: ctx.session } });
 });
 
 export const adminProcedure = t.procedure.use(enforceAdmin);

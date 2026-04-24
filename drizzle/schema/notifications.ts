@@ -32,7 +32,8 @@ export const notificationLog = pgTable("notification_log", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const refundStatusHistory = pgTable("refund_status_history", {
+/** @deprecated Use refundStatusHistory from refund-status schema (drizzle/schema/refund-status.ts) */
+export const legacyRefundStatusHistory = pgTable("refund_status_history_legacy", {
   historyId: uuid("history_id").primaryKey().defaultRandom(),
   returnId: uuid("return_id").notNull().references(() => taxReturns.returnId),
   previousStatus: text("previous_status"),

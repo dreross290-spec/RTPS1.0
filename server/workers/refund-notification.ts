@@ -6,7 +6,7 @@ import {
   clients,
   notificationLog,
   notificationTemplates,
-  refundStatusHistory,
+  legacyRefundStatusHistory as refundStatusHistory,
 } from "@/drizzle/schema";
 import { eq, and, isNull } from "drizzle-orm";
 import {

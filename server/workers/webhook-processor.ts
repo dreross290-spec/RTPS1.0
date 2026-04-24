@@ -4,12 +4,14 @@
  */
 import { TwilioWebhookHandler } from "../_core/integrations/twilio/webhook-handler.js";
 import { SendGridWebhookHandler } from "../_core/integrations/sendgrid/webhook-handler.js";
+import { NotificationLogger } from "../_core/audit/notification-logger.js";
 import { db } from "../context.js";
 import { providerWebhooks } from "../../drizzle/schema/index.js";
 import { isNull, eq } from "drizzle-orm";
 
-const twilioHandler = new TwilioWebhookHandler();
-const sendgridHandler = new SendGridWebhookHandler();
+const logger = new NotificationLogger(db);
+const twilioHandler = new TwilioWebhookHandler(db, logger);
+const sendgridHandler = new SendGridWebhookHandler(db, logger);
 
 const INTERVAL_MS = 15_000;
 let running = true;
@@ -24,16 +26,21 @@ async function runCycle(): Promise<void> {
   for (const webhook of pending) {
     try {
       if (webhook.provider === "twilio") {
-        await twilioHandler.handleDeliveryStatus(webhook.payload as Parameters<typeof twilioHandler.handleDeliveryStatus>[0]);
+        await twilioHandler.handleDeliveryStatus(
+          webhook.body as unknown as Parameters<typeof twilioHandler.handleDeliveryStatus>[0],
+          webhook.id,
+        );
       } else if (webhook.provider === "sendgrid") {
-        await sendgridHandler.handleEmailEvent(webhook.payload as Parameters<typeof sendgridHandler.handleEmailEvent>[0]);
+        await sendgridHandler.handleEmailEvents(
+          [webhook.body] as unknown as Parameters<typeof sendgridHandler.handleEmailEvents>[0],
+        );
       }
       await db
         .update(providerWebhooks)
         .set({ processedAt: new Date() })
-        .where(eq(providerWebhooks.webhookId, webhook.webhookId));
+        .where(eq(providerWebhooks.id, webhook.id));
     } catch (err) {
-      console.error(JSON.stringify({ level: "error", webhookId: webhook.webhookId, error: String(err) }));
+      console.error(JSON.stringify({ level: "error", webhookId: webhook.id, error: String(err) }));
     }
   }
 }

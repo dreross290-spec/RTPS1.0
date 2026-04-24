@@ -8,14 +8,15 @@ import { SendGridClient } from "../_core/integrations/sendgrid/client.js";
 import { NotificationLogger } from "../_core/audit/notification-logger.js";
 import { maskPhone, maskEmail } from "../lib/utils/masking.js";
 import type { NotificationQueueItem } from "../_core/notifications/types.js";
+import { db } from "../context.js";
 
-const queueManager = new QueueManager();
-const twilioClient = new TwilioClient(
-  process.env["TWILIO_ACCOUNT_SID"] ?? "",
-  process.env["TWILIO_AUTH_TOKEN"] ?? "",
-  process.env["TWILIO_PHONE_NUMBER"] ?? "",
-);
-const sendGridClient = new SendGridClient(process.env["SENDGRID_API_KEY"] ?? "");
+const queueManager = new QueueManager(db);
+const twilioClient = new TwilioClient({
+  accountSid: process.env["TWILIO_ACCOUNT_SID"] ?? "",
+  authToken: process.env["TWILIO_AUTH_TOKEN"] ?? "",
+  fromNumber: process.env["TWILIO_PHONE_NUMBER"] ?? "",
+});
+const sendGridClient = new SendGridClient({ apiKey: process.env["SENDGRID_API_KEY"] ?? "" });
 const logger = new NotificationLogger();
 
 const BATCH_SIZE = Number(process.env["NOTIFICATION_QUEUE_BATCH_SIZE"] ?? 100);
@@ -24,18 +25,25 @@ const INTERVAL_MS = 30_000;
 async function processItem(item: NotificationQueueItem): Promise<void> {
   try {
     if (item.channel === "sms") {
-      await twilioClient.sendSMS(item.recipient, item.content);
-      await queueManager.markSent(item.queueId, `twilio-${Date.now()}`);
-      await logger.logNotificationSent(item.queueId, { type: "phone", masked: maskPhone(item.recipient) });
+      const payload = item.payload as { toEncrypted: string; body: string };
+      await twilioClient.sendSMS(payload.toEncrypted, payload.body);
+      await queueManager.markSent(item.id, `twilio-${Date.now()}`);
+      await logger.logNotificationSent(item.id, { channel: "sms", maskedPhone: maskPhone(payload.toEncrypted) });
     } else {
-      await sendGridClient.sendEmail(item.recipient, item.templateId ?? "", {});
-      await queueManager.markSent(item.queueId, `sendgrid-${Date.now()}`);
-      await logger.logNotificationSent(item.queueId, { type: "email", masked: maskEmail(item.recipient) });
+      const payload = item.payload as { toEncrypted: string; templateId?: string; subject?: string; dynamicData?: Record<string, unknown> };
+      await sendGridClient.sendEmail(
+        payload.toEncrypted,
+        payload.templateId ?? "",
+        payload.dynamicData ?? {},
+        payload.subject ?? "",
+      );
+      await queueManager.markSent(item.id, `sendgrid-${Date.now()}`);
+      await logger.logNotificationSent(item.id, { channel: "email", maskedEmail: maskEmail(payload.toEncrypted) });
     }
   } catch (err) {
-    const retryCount = (item.retryCount ?? 0) + 1;
-    await queueManager.markFailed(item.queueId, String(err), retryCount);
-    console.error(JSON.stringify({ level: "error", queueId: item.queueId, error: String(err) }));
+    const retryCount = (item.attemptCount ?? 0) + 1;
+    await queueManager.markFailed(item.id, String(err), retryCount);
+    console.error(JSON.stringify({ level: "error", queueId: item.id, error: String(err) }));
   }
 }
 

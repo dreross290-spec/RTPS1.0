@@ -13,7 +13,7 @@ import {
   refundStatusHistory,
   notificationPreferences,
 } from "../../drizzle/schema/index.js";
-import { RefundEventType } from "../../lib/constants/refund-events.js";
+import { RefundEventType } from "../lib/constants/refund-events.js";
 import type { RefundStatus } from "../../drizzle/schema/refund-status.js";
 
 // ─── Status → Next Predicted Event Map ───────────────────────────────────────
@@ -73,9 +73,8 @@ export const refundStatusRouter = router({
         clientId: row.clientId,
         taxYear: row.taxYear,
         status: row.status,
-        refundAmountCents: row.refundAmountCents,
+        refundAmount: row.refundAmount,
         expectedDepositDate: row.expectedDepositDate,
-        paymentMethod: row.paymentMethod,
         trackingNumber: row.trackingNumber,
         statusMessage: row.statusMessage,
         recordedAt: row.recordedAt,
@@ -106,9 +105,8 @@ export const refundStatusRouter = router({
         items: rows.map((r) => ({
           id: r.id,
           status: r.status,
-          refundAmountCents: r.refundAmountCents,
+          refundAmount: r.refundAmount,
           expectedDepositDate: r.expectedDepositDate,
-          paymentMethod: r.paymentMethod,
           trackingNumber: r.trackingNumber,
           statusMessage: r.statusMessage,
           recordedAt: r.recordedAt,

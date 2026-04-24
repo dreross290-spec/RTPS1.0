@@ -1,5 +1,5 @@
 import { db } from "@server/lib/db";
-import { taxReturns, refundStatusHistory } from "@/drizzle/schema";
+import { taxReturns, legacyRefundStatusHistory } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { decryptSSN } from "@server/lib/utils/encryption";
 
@@ -122,7 +122,7 @@ export async function detectStatusChange(
 ): Promise<boolean> {
   if (currentStatus === newStatus) return false;
 
-  await db.insert(refundStatusHistory).values({
+  await db.insert(legacyRefundStatusHistory).values({
     returnId,
     previousStatus: currentStatus,
     newStatus,

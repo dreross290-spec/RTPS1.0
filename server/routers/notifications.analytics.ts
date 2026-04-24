@@ -41,21 +41,21 @@ export const analyticsRouter = router({
       const since = new Date(Date.now() - input.days * 86_400_000);
       const actions = await db
         .select({
-          action: notificationAudit.action,
+          action: notificationAudit.deliveryStatus,
           total: count(),
         })
         .from(notificationAudit)
-        .where(gte(notificationAudit.timestamp, since))
-        .groupBy(notificationAudit.action);
+        .where(gte(notificationAudit.createdAt, since))
+        .groupBy(notificationAudit.deliveryStatus);
 
       const totals: Record<string, number> = {};
       for (const a of actions) totals[a.action] = Number(a.total);
       const sent = totals["sent"] ?? 0;
       return {
-        openRate: sent ? ((totals["opened"] ?? 0) / sent) * 100 : 0,
-        clickRate: sent ? ((totals["clicked"] ?? 0) / sent) * 100 : 0,
-        bounceRate: sent ? ((totals["bounced"] ?? 0) / sent) * 100 : 0,
-        complaintRate: sent ? ((totals["complained"] ?? 0) / sent) * 100 : 0,
+        openRate: sent ? ((totals["open"] ?? 0) / sent) * 100 : 0,
+        clickRate: sent ? ((totals["click"] ?? 0) / sent) * 100 : 0,
+        bounceRate: sent ? ((totals["bounce"] ?? 0) / sent) * 100 : 0,
+        complaintRate: sent ? ((totals["spam_report"] ?? 0) / sent) * 100 : 0,
         totals,
       };
     }),
