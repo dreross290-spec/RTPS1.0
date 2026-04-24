@@ -1,6 +1,7 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { db } from "@server/lib/db";
+import { extractToken, verifyToken } from "@server/lib/auth";
 import superjson from "superjson";
 
 // ── Context ───────────────────────────────────────────────────────────────────
@@ -23,8 +24,26 @@ export async function createTRPCContext(
 ): Promise<TRPCContext> {
   const { req, res } = opts;
 
-  // In production, use next-auth session or JWT validation here
-  const session = null;
+  let session: TRPCContext["session"] = null;
+
+  const token = extractToken(
+    req.headers as Record<string, string | string[] | undefined>
+  );
+
+  if (token) {
+    try {
+      const payload = await verifyToken(token);
+      session = {
+        user: {
+          id: payload.sub,
+          accountId: payload.accountId ?? "",
+          role: payload.role,
+        },
+      };
+    } catch {
+      // Invalid / expired token – treat as unauthenticated
+    }
+  }
 
   return { db, req, res, session };
 }
@@ -64,7 +83,7 @@ const enforceAdmin = t.middleware(({ ctx, next }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   const { role } = ctx.session.user;
-  if (!["super_admin", "firm_admin"].includes(role)) {
+  if (!["super_admin", "firm_admin", "admin"].includes(role)) {
     throw new TRPCError({ code: "FORBIDDEN" });
   }
   return next({ ctx });

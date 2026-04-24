@@ -1,4 +1,5 @@
 export * from "./accounts";
+export * from "./users";
 export * from "./preparers";
 export * from "./clients";
 export * from "./tax-returns";
