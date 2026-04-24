@@ -42,11 +42,11 @@ export function useAuth(): UseAuthReturn {
       const res = await loginApi(email, password);
       setUser(res.user);
       const rawRedirect = new URLSearchParams(window.location.search).get("redirect");
-      // Only allow internal redirects (must start with /) to prevent open-redirect attacks
+      // Validate redirect is a safe internal path to prevent open-redirect attacks.
+      // Only allow relative paths with safe URL characters (no backslash, no protocol).
+      const isSafePath = (p: string) => /^\/[A-Za-z0-9/_.\-~%?=&#]*$/.test(p);
       const redirect =
-        rawRedirect && rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
-          ? rawRedirect
-          : "/admin/dashboard";
+        rawRedirect && isSafePath(rawRedirect) ? rawRedirect : "/admin/dashboard";
       await router.push(redirect);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");

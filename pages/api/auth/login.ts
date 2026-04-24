@@ -57,8 +57,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       where: eq(users.email, email.toLowerCase()),
     });
 
-    // Constant-time-safe: always run bcrypt compare even if user not found
-    const dummyHash = "$2a$12$invalidhashfortimingnormalization.................";
+    // Constant-time-safe: always run bcrypt compare even if user not found.
+    // Use a properly formatted bcrypt v2a hash to ensure bcrypt.compare runs its full routine.
+    const dummyHash = "$2a$12$LoremIpsumDummyHashXX.XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
     const passwordValid = user
       ? await verifyPassword(password, user.passwordHash)
       : await verifyPassword(password, dummyHash).then(() => false);
